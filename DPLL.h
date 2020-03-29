@@ -18,7 +18,7 @@ class DPLL {
   static Status bcp(CNF &);
   static Status assign(CNF &,int);
   static void print(CNF &, int);
-  static Status performDPLL(CNF &);
+  static Status perform_dpll(CNF &);
  public:
   explicit DPLL(CNF & f) : cnf(f){}
   DPLL(CNF & f, Strategy c) : cnf(f), choose(std::move(c)){}

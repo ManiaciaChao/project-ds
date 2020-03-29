@@ -29,11 +29,13 @@ struct Literal {
   int count = 0;
 };
 
+using Clause = std::vector<Literal>;
 
 class CNF {
  public:
   std::vector<Literal> literals;
-  std::vector<std::vector<Literal>> clauses;
+  std::vector<Clause> clauses;
+  CNF():literals({}),clauses({}){};
   explicit CNF(std::basic_istream<char> &stream);
   CNF(const CNF &src);
   std::string to_string();

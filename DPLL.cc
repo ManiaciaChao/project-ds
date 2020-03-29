@@ -57,7 +57,7 @@ Status DPLL::assign(CNF &cnf, int id) {
   return Status::pending;
 }
 
-Status DPLL::performDPLL(CNF &cnf) {
+Status DPLL::perform_dpll(CNF &) {
   int status = bcp(cnf);
   if (status == holdable) {
     print(cnf, status);
@@ -88,7 +88,7 @@ Status DPLL::performDPLL(CNF &cnf) {
     } else if (transform_result == Status::unholdable) {
       continue;
     }
-    Status dpll_result = performDPLL(cur_cnf);
+    Status dpll_result = perform_dpll(cur_cnf);
     if (dpll_result == Status::done) {
       return dpll_result;
     }
@@ -110,7 +110,7 @@ void DPLL::print(CNF &cnf, int status) {
 }
 
 void DPLL::solve() {
-  auto status = performDPLL(cnf);
+  auto status = perform_dpll(cnf);
   if (status == pending) {
     print(cnf, Status::unholdable);
   }
