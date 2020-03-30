@@ -23,7 +23,7 @@ enum Value {
 };
 
 struct Literal {
-  int id;
+  int id = 0;
   int pol = 0;
   Value val = undefined;
   int count = 0;
@@ -35,11 +35,11 @@ class CNF {
  public:
   std::vector<Literal> literals;
   std::vector<Clause> clauses;
-  CNF():literals({}),clauses({}){};
+  CNF() : literals({}), clauses({}) {};
   explicit CNF(std::basic_istream<char> &stream);
   CNF(const CNF &src);
   std::string to_string();
-//  void print();
+  void add_clause(const Clause &c);
 };
 
 #endif //CP_DS_CNF_H

@@ -74,9 +74,10 @@ BPuzzle::BPuzzle() {
     table[y][x] = i;
     i++;
   }
+  offset_n2 = table.size();
   offset_sxy = size * size;
-  offset_sxyu = offset_sxy + 2*table.size();
-  offset_sxyub = offset_sxyu + table.size() * 2 * size;
+  offset_sxyu = offset_sxy + 2 * offset_n2;
+  offset_sxyub = offset_sxyu + offset_n2 * 2 * size;
 }
 
 // (s,x,y) -> size^2 + [1, 2 * C(size, 2)]
@@ -89,9 +90,9 @@ int BPuzzle::flatten(int s, int x, int y, int u) {
   return offset_sxyu + table[x][y] * 2 * size + 2 * (u - 1) + s - 1;
 }
 // (s,x,y,u,b) -> size^2 + 2 * C(size, 2) + 2 * size * C(size, 2) + [1, 4 * size * C(size, 2)]
-int BPuzzle::flatten(int s, int x, int y,int u,int b) {
+int BPuzzle::flatten(int s, int x, int y, int u, int b) {
   auto n2_size = all_combinations(size, 2).size();
-  return offset_sxyub + table[x][y] * 4 * size + 4 * (u-1) + 2 * (s-1) + b;
+  return offset_sxyub + table[x][y] * 4 * size + 4 * (u - 1) + 2 * (s - 1) + b;
 }
 
 void BPuzzle::generate_cnf(std::string str) {
@@ -106,12 +107,10 @@ void BPuzzle::constraint1() {
         Clause r_clause, c_clause;
         for (int i = 0; i < 3; i++) {
           r_clause.push_back(Literal{flatten(l, s + i), polar});
-          cnf.literals[flatten(l, s + i)].count++;
           c_clause.push_back(Literal{flatten(s + i, l), polar});
-          cnf.literals[flatten(s + i, l)].count++;
         }
-        cnf.clauses.push_back(r_clause);
-        cnf.clauses.push_back(c_clause);
+        cnf.add_clause(r_clause);
+        cnf.add_clause(c_clause);
       }
     }
   }
@@ -123,23 +122,66 @@ void BPuzzle::constraint2() {
     for (int i = 1; i <= size; i++) {
       auto combinations = all_combinations(size, size / 2 + 1);
       for (const auto &combination:combinations) {
+        Clause r_clause, c_clause;
         for (auto var:combination) {
-          Clause r_clause, c_clause;
           r_clause.push_back(Literal{flatten(i, var), polar});
-          cnf.literals[flatten(i, var)].count++;
           c_clause.push_back(Literal{flatten(var, i), polar});
-          cnf.literals[flatten(var, i)].count++;
-          cnf.clauses.push_back(r_clause);
-          cnf.clauses.push_back(c_clause);
         }
+        cnf.add_clause(r_clause);
+        cnf.add_clause(c_clause);
       }
     }
   }
 }
 
 void BPuzzle::constraint3() {
-  auto id_start = size * size;
-
+//  s -> {1, 2}
+//  x -> [1, size]
+//  y -> [1, size]
+//  u -> [1, size]
+//  b -> {0, 1}
+  cnf.literals.resize(offset_sxyub + table.size() * size * 4);
+  for (int s = 1; s <= 2; s++) {
+    for (int x = 1; x <= size; x++) {
+      for (int y = 1; y <= size; y++) {
+        Clause clause3_1;
+        clause3_1.push_back(Literal{flatten(s, x, y), -1});
+        for (int u = 1; u <= size; u++) {
+          clause3_1.push_back(Literal{flatten(s, x, y, u), -1});
+          Clause clause3_2 = {
+              Literal{flatten(s, x, y), 1},
+              Literal{flatten(s, x, y, u), 1}
+          };
+          cnf.add_clause(clause3_2);
+          for (int b = 0; b < 2; b++) {
+            auto pol = b == 1 ? 1 : -1;
+            Clause clause_5_1, clause_5_2, clause_5_3;
+            clause_5_1.push_back(Literal{flatten(x, u), pol});
+            clause_5_1.push_back(Literal{flatten(s, x, y, u, b), -pol});
+            clause_5_2.push_back(Literal{flatten(y, u), pol});
+            clause_5_2.push_back(Literal{flatten(s, x, y, u, b), -pol});
+            clause_5_3.push_back(Literal{flatten(x, u), -pol});
+            clause_5_3.push_back(Literal{flatten(y, u), -pol});
+            clause_5_3.push_back(Literal{flatten(s, x, y, u, b), pol});
+            cnf.add_clause(clause_5_1);
+            cnf.add_clause(clause_5_2);
+            cnf.add_clause(clause_5_3);
+          }
+          Clause clause_4_1, clause_4_2, clause_4_3;
+          clause_4_1.push_back(Literal{flatten(s, x, y, u), 1});
+          clause_4_1.push_back(Literal{flatten(s, x, y, u, 0), -1});
+          clause_4_2.push_back(Literal{flatten(s, x, y, u), 1});
+          clause_4_2.push_back(Literal{flatten(s, x, y, u, 1), -1});
+          clause_4_3.push_back(Literal{flatten(s, x, y, u), -1});
+          clause_4_1.push_back(Literal{flatten(s, x, y, u, 0), 1});
+          clause_4_2.push_back(Literal{flatten(s, x, y, u, 1), 1});
+          cnf.add_clause(clause_4_1);
+          cnf.add_clause(clause_4_2);
+          cnf.add_clause(clause_4_3);
+        }
+        cnf.add_clause(clause3_1);
+      }
+    }
+  }
 
 }
-

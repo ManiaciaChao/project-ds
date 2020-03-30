@@ -31,9 +31,10 @@ CNF::CNF(std::basic_istream<char> &stream) {
     while (true) {
       stream >> literal;
       if (literal != 0) {
-        clause.push_back(Literal{abs(literal) - 1});
+        auto pol = literal > 0 ? 1 : -1;
+        clause.push_back(Literal{abs(literal) - 1,pol});
         literals[abs(literal) - 1].count++;
-        literals[abs(literal) - 1].pol += literal > 0 ? 1 : -1;
+        literals[abs(literal) - 1].pol += pol;
       } else { // 0 for EOL
         break;
       }
@@ -53,14 +54,21 @@ std::string CNF::to_string() {
       + "\n";
   for (const auto &clause:clauses) {
     for (const auto &literal:clause) {
-      if (!literal.pol) {
+      if (literal.pol<0) {
         str += "-";
       }
-      str += std::to_string(literal.id) + " ";
+      str += std::to_string(literal.id+1) + " ";
     }
     str += "0\n";
   }
   return str;
 }
+void CNF::add_clause(const Clause &clause) {
+  clauses.push_back(clause);
+  for (const auto &literal:clause) {
+    literals[literal.id].count++;
+    literals[literal.id].pol += literal.pol;
+  }
 
+}
 #include "CNF.h"

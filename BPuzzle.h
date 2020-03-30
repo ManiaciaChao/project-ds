@@ -14,6 +14,7 @@ class BPuzzle {
   int size = 4;
   CNF cnf;
   std::vector<std::vector<int>> table;
+  int offset_n2 = 0;
   int offset_sxy = 0;
   int offset_sxyu = 0;
   int offset_sxyub = 0;

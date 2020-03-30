@@ -12,16 +12,18 @@
 
 class DPLL {
  private:
-  CNF cnf;
+  CNF origin_cnf;
   Strategy choose = Strategies::frequential;
+ public:
+  CNF result_cnf;
  private:
   static Status bcp(CNF &);
-  static Status assign(CNF &,int);
-  static void print(CNF &, int);
-  static Status perform_dpll(CNF &);
+  static Status assign(CNF &, int);
+  Status perform_dpll(CNF &);
+  void save_result(CNF &, int);
  public:
-  explicit DPLL(CNF & f) : cnf(f){}
-  DPLL(CNF & f, Strategy c) : cnf(f), choose(std::move(c)){}
+  explicit DPLL(const CNF &f) : origin_cnf(f) {}
+  DPLL(CNF &f, Strategy c) : origin_cnf(f), choose(std::move(c)) {}
   void solve();
 };
 
