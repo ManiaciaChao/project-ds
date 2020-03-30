@@ -16,6 +16,7 @@ class DPLL {
   Strategy choose = Strategies::frequential;
  public:
   CNF result_cnf;
+  bool satisfiable = false;
  private:
   static Status bcp(CNF &);
   static Status assign(CNF &, int);
@@ -24,7 +25,7 @@ class DPLL {
  public:
   explicit DPLL(const CNF &f) : origin_cnf(f) {}
   DPLL(CNF &f, Strategy c) : origin_cnf(f), choose(std::move(c)) {}
-  void solve();
+  Status solve();
 };
 
 #endif //CP_DS__DPLL_H_

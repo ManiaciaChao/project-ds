@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include "DPLL.h"
+
+// may change clauses of ref cnf
 Status DPLL::bcp(CNF &cnf) {
   if (cnf.clauses.empty()) {
     return Status::holdable;
@@ -18,8 +20,7 @@ Status DPLL::bcp(CNF &cnf) {
         has_unit = true;
         auto &unit = clause[0];
         cnf.literals[unit.id].val = unit.pol > 0 ? positive : negative;
-        cnf.literals[unit.id].count = 0;
-
+//        cnf.literals[unit.id].count = 0;
         Status result = assign(cnf, unit.id);
         if (result == Status::holdable || result == Status::unholdable) {
           return result;
@@ -32,7 +33,7 @@ Status DPLL::bcp(CNF &cnf) {
   return Status::pending; // if reached here, the unit resolution ended normally
 }
 
-// 5000ms
+// will change clauses of ref cnf
 Status DPLL::assign(CNF &cnf, int id) {
   Value val = cnf.literals[id].val;
   auto &clauses = cnf.clauses;
@@ -75,7 +76,7 @@ Status DPLL::perform_dpll(CNF &cnf) {
     CNF cur_cnf = cnf;
     auto &var_ref = cur_cnf.literals[var];
     var_ref.val = boolean[(var_ref.pol >= 0) ? j : ((j + 1) % 2)];
-    cur_cnf.literals[var].count = 0;
+//    cur_cnf.literals[var].count = 0;
     status = assign(cur_cnf, var);
     if (status == holdable) {
       save_result(cur_cnf, status);
@@ -93,21 +94,19 @@ Status DPLL::perform_dpll(CNF &cnf) {
 
 void DPLL::save_result(CNF &cnf, int status) {
   if (status == holdable) {
+    satisfiable = true;
     result_cnf = cnf;
-    std::cout << "SAT" << std::endl;
-    std::for_each(cnf.literals.begin(), cnf.literals.end(), [](const Literal &l) {
-      std::cout << (l.val ? "" : "-") << l.id + 1 << " ";
-    });
-    std::cout << " 0";
   } else {
-    std::cout << "UNSAT";
+    satisfiable = false;
   }
-  std::cout << std::endl;
 }
 
-void DPLL::solve() {
-  auto status = perform_dpll(origin_cnf);
+Status DPLL::solve() {
+  auto cnf= origin_cnf; // keep original cnf clean
+  auto status =  perform_dpll(cnf);
   if (status == pending) {
-    save_result(origin_cnf, Status::unholdable);
+    return Status::unholdable;
+  } else {
+    return  status;
   }
 }

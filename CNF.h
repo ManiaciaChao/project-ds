@@ -22,6 +22,8 @@ enum Value {
   undefined = -1,
 };
 
+Value operator!(Value& v);
+
 struct Literal {
   int id = 0;
   int pol = 0;

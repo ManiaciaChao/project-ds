@@ -5,6 +5,14 @@
 #include <iostream>
 #include "CNF.h"
 
+Value operator!(Value& v) {
+  switch(v) {
+    case positive: return negative;
+    case negative: return positive;
+    default: return undefined;
+  }
+}
+
 CNF::CNF(std::basic_istream<char> &stream) {
   char c;
   int literal_len, clause_len;
@@ -66,6 +74,7 @@ std::string CNF::to_string() {
 void CNF::add_clause(const Clause &clause) {
   clauses.push_back(clause);
   for (const auto &literal:clause) {
+    literals[literal.id].id=literal.id;
     literals[literal.id].count++;
     literals[literal.id].pol += literal.pol;
   }

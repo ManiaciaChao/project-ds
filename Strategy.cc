@@ -23,7 +23,7 @@ int frequential(CNF &cnf) {
   auto src = cnf.literals;
   std::copy_if(src.begin(), src.end(), std::back_inserter(filtered),
                [](const Literal &l) {
-                 return l.val == undefined && l.count > 0;
+                 return l.val == undefined;
                });
   std::sort(filtered.begin(), filtered.end(),
             [](const Literal &a, const Literal b) {
