@@ -9,7 +9,7 @@
 
 namespace Strategies {
 
-int sequential(CNF &cnf) {
+int linear(CNF &cnf) {
   for (auto literal:cnf.literals) {
     if (literal.val == undefined) {
       return literal.id;

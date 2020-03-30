@@ -12,8 +12,8 @@ using Strategy = std::function<int(CNF &)>;
 
 namespace Strategies {
 
-int sequential(CNF &cnf);
-int shuffled(CNF &cnf);
+int linear(CNF &cnf);
+int random(CNF &cnf);
 int frequential(CNF &cnf);
 
 }
