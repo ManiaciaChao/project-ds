@@ -56,7 +56,7 @@ std::vector<std::vector<int>> n2_offset_table(int size) {
   return table;
 }
 
-BPuzzle::BPuzzle() {
+void BPuzzle::init() {
   cnf = CNF{};
   auto combinations = all_combinations(size, 2);
   table = std::vector<std::vector<int>>{};
@@ -74,10 +74,26 @@ BPuzzle::BPuzzle() {
     table[y][x] = i;
     i++;
   }
-  offset_n2 = table.size();
+  offset_n2 = combinations.size();
   offset_sxy = size * size;
   offset_sxyu = offset_sxy + 2 * offset_n2;
   offset_sxyub = offset_sxyu + offset_n2 * 2 * size;
+}
+
+BPuzzle::BPuzzle(std::basic_istream<char> &stream) {
+  int x, y, val, pol;
+  stream >> size;
+  while (!stream.eof()) {
+    stream >> x;
+    stream >> y;
+    stream >> val;
+    pol = val == 1 ? 1 : -1;
+    cnf.add_clause({Literal{flatten(x, y),pol}});
+  }
+  init();
+//  apply_constraint1();
+//  apply_constraint2();
+//  apply_constraint3();
 }
 
 // (s,x,y) -> size^2 + [1, 2 * C(size, 2)]
@@ -97,9 +113,10 @@ int BPuzzle::flatten(int s, int x, int y, int u, int b) {
 
 void BPuzzle::generate_cnf(std::string str) {
 //  cnf.literals
+
 }
 
-void BPuzzle::constraint1() {
+void BPuzzle::apply_constraint1() {
   auto polars = {1, -1};
   for (auto polar:polars) {
     for (int l = 1; l <= size - 2; l++) {
@@ -116,7 +133,7 @@ void BPuzzle::constraint1() {
   }
 }
 
-void BPuzzle::constraint2() {
+void BPuzzle::apply_constraint2() {
   auto polars = {1, -1};
   for (auto polar:polars) {
     for (int i = 1; i <= size; i++) {
@@ -134,13 +151,13 @@ void BPuzzle::constraint2() {
   }
 }
 
-void BPuzzle::constraint3() {
+void BPuzzle::apply_constraint3() {
 //  s -> {1, 2}
 //  x -> [1, size]
 //  y -> [1, size]
 //  u -> [1, size]
 //  b -> {0, 1}
-  cnf.literals.resize(offset_sxyub + table.size() * size * 4);
+  cnf.literals.resize(offset_sxyub + offset_n2 * size * 4);
   for (int s = 1; s <= 2; s++) {
     for (int x = 1; x <= size; x++) {
       for (int y = 1; y <= size; y++) {

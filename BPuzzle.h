@@ -35,15 +35,15 @@ class BPuzzle {
   int flatten(int s, int x, int y);
   int flatten(int s, int x, int y, int u);
   int flatten(int s, int x, int y, int u, int b);
-
-  void constraint1(); // no 3 consecutive same values for each row/column
-  void constraint2(); // number of 1 or 0 should be same for each row/column
-  void constraint3(); // no repeated row/column
+  void apply_constraint1(); // no 3 consecutive same values for each row/column
+  void apply_constraint2(); // number of 1 or 0 should be same for each row/column
+  void apply_constraint3(); // no repeated row/column
  public:
-  BPuzzle();
-  explicit BPuzzle(CNF &cnf) : cnf(cnf) {}
+//  BPuzzle();
+  explicit BPuzzle(std::basic_istream<char> &stream);
   void init();
   void generate_cnf(std::string str);
+  inline std::string cnf_string() { return cnf.to_string(); }
 };
 
 #endif //CP_DS__BPUZZLE_H_
