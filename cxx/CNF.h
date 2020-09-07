@@ -17,9 +17,9 @@ enum Status {
 };
 
 enum Value {
+  undefined = -1,
   negative = 0,
   positive = 1,
-  undefined = -1,
 };
 
 Value operator!(Value& v);

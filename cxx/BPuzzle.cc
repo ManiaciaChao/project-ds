@@ -2,20 +2,21 @@
 // Created by user24 on 2020/3/29.
 //
 
-#include <algorithm>
-#include <iostream>
-#include <string>
-#include <random>
-#include <stack>
 #include "BPuzzle.h"
 
+#include <algorithm>
+#include <iostream>
+#include <random>
+#include <stack>
+#include <string>
+
 std::vector<std::vector<int>> all_combinations(int N, int K) {
-  std::string bitmask(K, 1); // K leading 1's
-  bitmask.resize(N, 0); // N-K trailing 0's
+  std::string bitmask(K, 1);  // K leading 1's
+  bitmask.resize(N, 0);       // N-K trailing 0's
   std::vector<std::vector<int>> combinations;
-  do { // permute bitmask
+  do {  // permute bitmask
     std::vector<int> combination;
-    for (int i = 0; i < N; ++i) { // [0..N-1] integers
+    for (int i = 0; i < N; ++i) {  // [0..N-1] integers
       if (bitmask[i]) {
         combination.push_back(i + 1);
       }
@@ -30,12 +31,12 @@ std::vector<std::vector<int>> n2_offset_table(int size) {
   auto table = std::vector<std::vector<int>>{};
   table.resize(size + 1);
   table.clear();
-  for (auto &sub:table) {
+  for (auto &sub : table) {
     sub.resize(size + 1);
     sub.clear();
   }
   int i = 0;
-  for (const auto &combination:combinations) {
+  for (const auto &combination : combinations) {
     auto x = combination[0];
     auto y = combination[1];
     table[x][y] = i;
@@ -52,13 +53,13 @@ void BPuzzle::init() {
   auto combinations = all_combinations(size, 2);
   table = std::vector<std::vector<int>>{};
   table.resize(size + 1);
-//  table.clear();
-  for (auto &sub:table) {
+  //  table.clear();
+  for (auto &sub : table) {
     sub.resize(size + 1);
-//    sub.clear();
+    //    sub.clear();
   }
   int i = 0;
-  for (const auto &combination:combinations) {
+  for (const auto &combination : combinations) {
     auto x = combination[0];
     auto y = combination[1];
     table[x][y] = i;
@@ -92,23 +93,26 @@ std::array<int, 2> BPuzzle::to_pos(int id) {
     return {0, 0};
   } else {
     int x = (id + 1) % size;
-    int y = (id + size + 1) / size;
-    if (x == 0) { x = size; }
+    int y = (id / size) + 1;
+    if (x == 0) {
+      x = size;
+    }
     return {x, y};
   }
 }
 
 /**
-  * s -> {1, 2}
-  * x -> [1, size]
-  * y -> [1, size]
-  * u -> [1, size]
-  * b -> {0, 1}
-  * (x,y) -> [1, size^2]
-  * (s,x,y) -> size^2 + [1, 2 * C(size, 2)]
-  * (s,x,y,u) -> size^2 + 2 * C(size, 2) + [1, 2 * size * C(size, 2)]
-  * (s,x,y,u,b) -> size^2 + 2 * C(size, 2) + 2 * size * C(size, 2) + [1, 4 * size * C(size, 2)]
-  * */
+ * s -> {1, 2}
+ * x -> [1, size]
+ * y -> [1, size]
+ * u -> [1, size]
+ * b -> {0, 1}
+ * (x,y) -> [1, size^2]
+ * (s,x,y) -> size^2 + [1, 2 * C(size, 2)]
+ * (s,x,y,u) -> size^2 + 2 * C(size, 2) + [1, 2 * size * C(size, 2)]
+ * (s,x,y,u,b) -> size^2 + 2 * C(size, 2) + 2 * size * C(size, 2) + [1, 4 * size
+ * * C(size, 2)]
+ * */
 int BPuzzle::flatten(int s, int x, int y) {
   return offset.sxy + 2 * table[x][y] + s - 1;
 }
@@ -123,7 +127,7 @@ int BPuzzle::flatten(int s, int x, int y, int u, int b) {
 
 void BPuzzle::apply_constraint1() {
   auto polars = {1, -1};
-  for (auto polar:polars) {
+  for (auto polar : polars) {
     for (int l = 1; l <= size; l++) {
       for (int s = 1; s <= size - 2; s++) {
         Clause r_clause, c_clause;
@@ -139,12 +143,12 @@ void BPuzzle::apply_constraint1() {
 }
 void BPuzzle::apply_constraint2() {
   auto polars = {1, -1};
-  for (auto polar:polars) {
+  for (auto polar : polars) {
     for (int i = 1; i <= size; i++) {
       auto combinations = all_combinations(size, size / 2 + 1);
-      for (const auto &combination:combinations) {
+      for (const auto &combination : combinations) {
         Clause r_clause, c_clause;
-        for (auto var:combination) {
+        for (auto var : combination) {
           r_clause.push_back(Literal{flatten(i, var), polar});
           c_clause.push_back(Literal{flatten(var, i), polar});
         }
@@ -163,10 +167,8 @@ void BPuzzle::apply_constraint3() {
         clause3_1.push_back(Literal{flatten(s, x, y), -1});
         for (int u = 1; u <= size; u++) {
           clause3_1.push_back(Literal{flatten(s, x, y, u), -1});
-          Clause clause3_2 = {
-              Literal{flatten(s, x, y), 1},
-              Literal{flatten(s, x, y, u), 1}
-          };
+          Clause clause3_2 = {Literal{flatten(s, x, y), 1},
+                              Literal{flatten(s, x, y, u), 1}};
           cnf.add_clause(clause3_2);
           for (int b = 0; b < 2; b++) {
             auto pol = b == 1 ? 1 : -1;
@@ -198,12 +200,9 @@ void BPuzzle::apply_constraint3() {
       }
     }
   }
-
 }
 
-bool has(const std::set<int> &set, int x) {
-  return set.find(x) != set.end();
-}
+bool has(const std::set<int> &set, int x) { return set.find(x) != set.end(); }
 bool BPuzzle::test_space() {
   auto set = std::set<int>{};
 
@@ -222,13 +221,15 @@ bool BPuzzle::test_space() {
         set.insert(flatten(s, x, y));
         for (int u = 1; u <= size; u++) {
           if (has(set, flatten(s, x, y, u))) {
-            printf("s:%d x:%d y:%d u:%d -> %d\n", s, x, y, u, flatten(s, x, y, u));
+            printf("s:%d x:%d y:%d u:%d -> %d\n", s, x, y, u,
+                   flatten(s, x, y, u));
             return false;
           }
           set.insert(flatten(s, x, y, u));
           for (int b = 0; b < 2; b++) {
             if (has(set, flatten(s, x, y, u, b))) {
-              printf("s:%d x:%d y:%d u:%d b:%d -> %d\n", s, x, y, u, b, flatten(s, x, y, u, b));
+              printf("s:%d x:%d y:%d u:%d b:%d -> %d\n", s, x, y, u, b,
+                     flatten(s, x, y, u, b));
               return false;
             }
             set.insert(flatten(s, x, y, u, b));
@@ -240,12 +241,19 @@ bool BPuzzle::test_space() {
   return true;
 }
 
-void BPuzzle::print(const CNF &f) {
+void BPuzzle::print(const CNF &f, bool convert_to_pos) {
   putchar('[');
   std::for_each(f.literals.begin(), f.literals.end(), [&](const Literal &l) {
-    if (l.id >= size * size) { return; }
-    auto pos = to_pos(l.id);
-    printf("[%d, %d, %d]", pos[0], pos[1], l.val);
+    if (l.id >= size * size) {
+      return;
+    }
+    if (convert_to_pos) {
+      auto pos = to_pos(l.id);
+      printf("[%d, %d, %d]", pos[0], pos[1], l.val);
+    } else {
+      printf("%d", l.val);
+    }
+
     if (l.id + 1 < size * size) {
       putchar(',');
     }
@@ -253,18 +261,23 @@ void BPuzzle::print(const CNF &f) {
   putchar(']');
 }
 
-void BPuzzle::solve() {
+bool BPuzzle::solve(bool should_print) {
   auto dpll = DPLL{cnf};
   auto status = dpll.solve();
   if (status == done) {
-    result = dpll.result_cnf;
-    print(result);
+    if (should_print) {
+      result = dpll.result_cnf;
+      print(result);
+    }
+    return true;
+  } else {
+    return false;
   }
 }
 
 CNF BPuzzle::generate(int init_size) {
   size = init_size;
-  cnf = CNF{}; // cnf is clean;
+  cnf = CNF{};  // cnf is clean;
   init();
   std::random_device rd;
   std::mt19937 e(rd());
@@ -272,9 +285,8 @@ CNF BPuzzle::generate(int init_size) {
   std::uniform_int_distribution<int> random_pos(1, size);
   int len = size * 2;
   std::vector<Clause> assigned = {};
-  std::vector<Literal> endgame = {};
   while (true) {
-    auto cur_cnf = cnf; // avoid pollute clean cnf
+    auto cur_cnf = cnf;  // avoid pollute clean cnf
     for (int i = 0; i < size * 2; i++) {
       while (true) {
         int rd_p = p(e) ? 1 : -1;
@@ -297,35 +309,37 @@ CNF BPuzzle::generate(int init_size) {
         auto pol = src_l.val == positive ? 1 : -1;
         assigned.push_back({Literal{src_l.id, pol}});
       }
-      break; // this selections works
+      break;  // this selections works
     }
   }
   // here cnf is already filled, so this is an end game
   // now we are gonna dig holes in the board to get an initial game
   // assigned literals are stored at vector `assigned` in the form of clause
   auto cur_cnf = cnf;
-  for (const auto &clause:assigned) {
-    cur_cnf.add_clause(clause); // assigned values
+  for (const auto &clause : assigned) {
+    cur_cnf.add_clause(clause);  // assigned values
   }
-//  auto dpll = DPLL{cur_cnf};
-//  auto status = dpll.solve(); // should holdable till now
-//  printf("%d", status);
+  //  auto dpll = DPLL{cur_cnf};
+  //  auto status = dpll.solve(); // should holdable till now
+  //  printf("%d", status);
   auto &clauses = cur_cnf.clauses;
   for (auto ri = clauses.rbegin(); (*ri)[0].id < size * size; ri++) {
     auto &literal = (*ri)[0];
-    literal.pol = -literal.pol; // assigned opposite values
+    literal.pol = -literal.pol;  // assigned opposite values
     auto dpll = DPLL{cur_cnf};
     auto status = dpll.solve();
-    if (status == unholdable) { // it can be dug out, if unholdable
-//      printf("remove %d\n",literal.id);
-      // link: https://stackoverflow.com/questions/1830158/how-to-call-erase-with-a-reverse-iterator
-      clauses.erase(std::next(ri).base()); // could be tricky here
+    if (status == unholdable) {  // it can be dug out, if unholdable
+      //      printf("remove %d\n",literal.id);
+      // link:
+      // https://stackoverflow.com/questions/1830158/how-to-call-erase-with-a-reverse-iterator
+      clauses.erase(std::next(ri).base());  // could be tricky here
       ri++;
     }
   }
   for (auto ri = clauses.rbegin(); (*ri)[0].id < size * size; ri++) {
     auto &literal = (*ri)[0];
-    endgame.push_back(literal);
+    // printf("%d %d\n",literal.id,literal.pol);
+    cur_cnf.literals[literal.id].val = literal.pol == 1 ? positive : negative;
   }
   cnf = cur_cnf;
   return cnf;

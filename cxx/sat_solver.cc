@@ -3,6 +3,7 @@
 #include <ctime>
 #include <cstring>
 #include <functional>
+#include <unordered_map>
 #include "CNF.h"
 #include "DPLL.h"
 #include "Strategy.h"

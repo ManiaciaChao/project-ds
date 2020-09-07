@@ -43,16 +43,15 @@ class BPuzzle {
   void apply_constraint1(); // no 3 consecutive same values for each row/column
   void apply_constraint2(); // number of 1 or 0 should be same for each row/column
   void apply_constraint3(); // no repeated row/column
-  void print(const CNF &f);
  public:
   BPuzzle() = default;
   explicit BPuzzle(const CNF& f):cnf{f}{};
   explicit BPuzzle(std::basic_istream<char> &stream);
   void init();
   bool test_space();
-  void solve();
+  bool solve(bool should_print=true);
+  void print(const CNF &f, bool convert_to_pos = true);
   CNF generate(int init_size);
-  void cnf_to_board();
   inline std::string cnf_string() { return cnf.to_string(); }
 };
 
